@@ -1,0 +1,24 @@
+Include "MapBasic.def"
+Dim vPath, pToConvert, vPathExp as String
+Declare Sub Main
+
+Sub Main()
+	
+vPath = "G:\USER\Mey\Scripte\MapInfo Color to RGB\"	
+pToConvert = FileOpenDlg(vPath+ "Input\","TAB",".TAB", "Open Layer where RGB should be added")
+print pToConvert
+Open Table pToConvert as vToConvert
+
+Alter Table vToConvert ( add fill Integer, R Integer, G Integer,B Integer ) Interactive
+
+Update vToConvert Set fill = styleattr(objectinfo(obj,3),2) 
+Update vToConvert Set R = fill\65536 
+Update vToConvert Set G = (fill - (fill \ 65536)*65536)\256 
+Update vToConvert Set B = (fill - ((fill \ 65536)*65536)  - (((fill - (fill \ 65536)*65536)\256))*256) 
+
+vPathExp = "G:\USER\Mey\Daten\"
+pToConvert = FileSaveAsDlg(vPathExp,"TAB","", "Export To ...")
+
+Commit Table vToConvert as pToConvert
+
+End Sub
