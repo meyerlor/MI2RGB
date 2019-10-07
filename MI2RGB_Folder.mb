@@ -4,9 +4,10 @@ Declare Sub Main
 
 Sub Main()
 	
-vPath = "G:\USER\Mey\Scripte\MapInfo Color to RGB\"	
-pToConvert = FileOpenDlg(vPath+ "Input\","TAB",".TAB", "Open Layer where RGB should be added")
-print pToConvert
+vPath = "G:\USER\Mey\Daten\"	
+pToConvert = FileOpenDlg(vPath+ "","TAB",".TAB", "Open Layer where RGB should be added")
+PathToDirectory$(pToConvert)
+
 Open Table pToConvert as vToConvert
 
 Alter Table vToConvert ( add fill Integer, R Integer, G Integer,B Integer ) Interactive
