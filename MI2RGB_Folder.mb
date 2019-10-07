@@ -1,33 +1,71 @@
 Include "MapBasic.def"
 Dim vPath, pToConvert, vPathExp as String
-Declare Sub Main
+Dim myArray() as String    '// create an array to store the table paths
+Dim tabName, tabPath, txtFile as String
+Dim i as Integer
 
+
+Declare Sub Main
+Declare Sub ReadTextFileToArray(ByVal txtFilePath as String, myArray() as String)
 Sub Main()
 	
-vPath = "G:\USER\Mey\Daten\"	
+vPath = "G:\USER\Mey\Daten\Deggenhausertal Tablet\KanalX\"	
 pToConvert = FileOpenDlg(vPath+ "","TAB",".TAB", "Open Layer where RGB should be added")
-PathToDirectory$(pToConvert)
+vPath = PathToDirectory$(pToConvert)
 
-Open Table pToConvert as vToConvert
 
-Alter Table vToConvert ( add fill Integer, R Integer, G Integer,B Integer ) Interactive
+Run program "Cmd.exe dir" + vPath+ " echo.>Liste.txt"
+Run program "Cmd.exe /c dir """+vPath+"*.TAB"" /b /w  > """+vPath+"Liste.txt"""
 
-OnError GoTo KeineFlaeche
-Update vToConvert Set fill = styleattr(objectinfo(obj,3),2) 
 
-KeineFlaeche:
-OnError GoTo KeineFlaecheUndText
-Update vToConvert Set fill = styleattr(objectinfo(obj,2),4)
 
-KeineFlaecheUndText:
-Update vToConvert Set fill = styleattr(objectinfo(obj,2),3)
-Update vToConvert Set R = fill\65536 
-Update vToConvert Set G = (fill - (fill \ 65536)*65536)\256 
-Update vToConvert Set B = (fill - ((fill \ 65536)*65536)  - (((fill - (fill \ 65536)*65536)\256))*256) 
 
-vPathExp = "G:\USER\Mey\Daten\" + vToConvert + "_RGB.TAB"
-pToConvert = FileSaveAsDlg(vPathExp,"TAB","", "Export To ...")
+txtFile = "G:\USER\Mey\Daten\Deggenhausertal Tablet\KanalX\Liste.txt"
 
-Commit Table vToConvert as pToConvert
+Call ReadTextFileToArray(txtFile, myArray) '// populate your array with the table paths from the text file
+
+For i = 1 to UBound(myArray)
+    If right$(myArray(i), 3) = "TAB" then   '// check that this is a tab file path
+        tabPath = myArray(i)    '// get path from array
+        Open table tabPath      '// open table
+        tabName = TableInfo(0, TAB_INFO_NAME)
+
+	Alter Table tabName ( add fill Integer, R Integer, G Integer,B Integer ) Interactive
+
+	OnError GoTo KeineFlaeche
+	Update tabName Set fill = styleattr(objectinfo(obj,3),2) 
+	resume 
+	KeineFlaeche:
+	OnError GoTo KeineFlaecheUndText
+	Update tabName Set fill = styleattr(objectinfo(obj,2),4)
+
+	KeineFlaecheUndText:
+	Update tabName Set fill = styleattr(objectinfo(obj,2),3)
+	Update tabName Set R = fill\65536 
+	Update tabName Set G = (fill - (fill \ 65536)*65536)\256 
+	Update tabName Set B = (fill - ((fill \ 65536)*65536)  - (((fill - (fill \ 65536)*65536)\256))*256) 
+
+	Pack table tabName  Graphic Data
+	End if
+Next 
 
 End Sub
+
+
+
+Sub ReadTextFileToArray(ByVal txtFilePath as String, myArray() as String)
+
+Dim i as Integer
+
+    i = 1
+	
+	Open file  "C:\Users\mey\Liste.txt" for input as #1   '// open text file for input (to read) as #1
+    Do Until EOF(1)             '// do until the end of file #1 is reached
+        Redim myArray(i)        '// resize array to i
+        Input #1, myArray(i)    '// read value from text file
+        i = i + 1               '// increment i
+    Loop                        '// return to Do Until...
+
+End Sub
+
+https://gis.stackexchange.com/questions/207944/mapbasic-cycle-through-directory-of-tab-files?noredirect=1&lq=1
