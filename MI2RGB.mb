@@ -11,21 +11,31 @@ Open Table pToConvert as vToConvert
 
 Alter Table vToConvert ( add fill Integer, R Integer, G Integer,B Integer ) Interactive
 
-OnError GoTo KeineFlaeche
-Update vToConvert Set fill = styleattr(objectinfo(obj,3),2) 
 
-KeineFlaeche:
-OnError GoTo KeineFlaecheUndText
-Update vToConvert Set fill = styleattr(objectinfo(obj,2),4)
+Select * From vToConvert where Str$(obj) = "Point" into Points
+Update Points Set fill = styleattr(objectinfo(obj,2),2)
 
-KeineFlaecheUndText:
-Update vToConvert Set fill = styleattr(objectinfo(obj,2),3)
+Select * From vToConvert where Str$(obj) = "Collection" into Collections
+Update Collections Set fill = 0
+
+Select * From vToConvert where Str$(obj) = "Line" into Lines
+Update Lines Set fill = styleattr(objectinfo(obj,2),4)
+
+Select * From vToConvert where Str$(obj) = "Region" into Regions
+Update Regions Set fill = styleattr(objectinfo(obj,3),2) 
+
+Select * From vToConvert where Str$(obj) = "Text" into Texts
+Update Texts Set fill = styleattr(objectinfo(obj,2),4)
+
+
+
+
 Update vToConvert Set R = fill\65536 
 Update vToConvert Set G = (fill - (fill \ 65536)*65536)\256 
 Update vToConvert Set B = (fill - ((fill \ 65536)*65536)  - (((fill - (fill \ 65536)*65536)\256))*256) 
 
 vPathExp = "G:\USER\Mey\Daten\" + vToConvert + "_RGB.TAB"
-pToConvert = FileSaveAsDlg(vPathExp,"TAB","", "Export To ...")
+pToConvert = FileSaveAsDlg(vPathExp,".TAB","", "Export To ...")
 
 Commit Table vToConvert as pToConvert
 

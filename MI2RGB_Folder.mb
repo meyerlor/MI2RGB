@@ -1,3 +1,7 @@
+' Fügt Spalten fill, R,G,B hinzu
+
+
+
 Include "MapBasic.def"
 Dim vPath, pToConvert, vPathExp as String
 Dim myArray() as String    '// create an array to store the table paths
@@ -7,20 +11,45 @@ Dim i as Integer
 
 Declare Sub Main
 Declare Sub ReadTextFileToArray(ByVal txtFilePath as String, myArray() as String)
+
+
+Sub ReadTextFileToArray(ByVal txtFilePath as String, myArray() as String)
+
+Dim i as Integer
+
+    i = 1
+	Note "Text Dokumente mit allen .TAB files im Ordner erfolgreich erstellt unter " + txtFilePath +" ." 
+	
+	Open file  txtFilePath for INPUT as #1   	
+    Do Until EOF(1)             '// do until the end of file #1 is reached
+        Redim myArray(i)        '// resize array to i
+        Input #1, myArray(i)    '// read value from text file
+        i = i + 1               '// increment i
+    Loop                        '// return to Do Until...
+
+End Sub
+
+
+
+
+
+
+
+
 Sub Main()
 	
-vPath = "G:\USER\Mey\Daten\Deggenhausertal Tablet\KanalX\"	
+vPath = "G:\USER\Mey\Daten\"	
 pToConvert = FileOpenDlg(vPath+ "","TAB",".TAB", "Open Layer where RGB should be added")
 vPath = PathToDirectory$(pToConvert)
 
 
 Run program "Cmd.exe dir" + vPath+ " echo.>Liste.txt"
-Run program "Cmd.exe /c dir """+vPath+"*.TAB"" /b /w  > """+vPath+"Liste.txt"""
+Run program "Cmd.exe /c dir """+vPath+"*.TAB"" /b /w > """+vPath+"Liste.txt""" 
+Run program "Cmd.exe /c taskkill /IM cmd.exe"
 
 
 
-
-txtFile = "G:\USER\Mey\Daten\Deggenhausertal Tablet\KanalX\Liste.txt"
+txtFile = vPath + "Liste.txt"
 
 Call ReadTextFileToArray(txtFile, myArray) '// populate your array with the table paths from the text file
 
@@ -30,42 +59,53 @@ For i = 1 to UBound(myArray)
         Open table tabPath      '// open table
         tabName = TableInfo(0, TAB_INFO_NAME)
 
-	Alter Table tabName ( add fill Integer, R Integer, G Integer,B Integer ) Interactive
+		If TableInfo(tabName,5)  Then
+			Alter Table tabName ( add fill Integer, R Integer, G Integer,B Integer) Interactive
+			
+			OnError Goto Weitermachen2
+			Alter Table tabName (add Angle float)
+			
+			Weitermachen2:
 
-	OnError GoTo KeineFlaeche
-	Update tabName Set fill = styleattr(objectinfo(obj,3),2) 
-	resume 
-	KeineFlaeche:
-	OnError GoTo KeineFlaecheUndText
-	Update tabName Set fill = styleattr(objectinfo(obj,2),4)
-
-	KeineFlaecheUndText:
-	Update tabName Set fill = styleattr(objectinfo(obj,2),3)
-	Update tabName Set R = fill\65536 
-	Update tabName Set G = (fill - (fill \ 65536)*65536)\256 
-	Update tabName Set B = (fill - ((fill \ 65536)*65536)  - (((fill - (fill \ 65536)*65536)\256))*256) 
-
-	Pack table tabName  Graphic Data
-	End if
-Next 
-
-End Sub
-
-
-
-Sub ReadTextFileToArray(ByVal txtFilePath as String, myArray() as String)
-
-Dim i as Integer
-
-    i = 1
+				Select * From tabName where Str$(obj) = "Point" into Points
+				Update Points Set fill = styleattr(objectinfo(obj,2),2)
 	
-	Open file  "C:\Users\mey\Liste.txt" for input as #1   '// open text file for input (to read) as #1
-    Do Until EOF(1)             '// do until the end of file #1 is reached
-        Redim myArray(i)        '// resize array to i
-        Input #1, myArray(i)    '// read value from text file
-        i = i + 1               '// increment i
-    Loop                        '// return to Do Until...
+				Select * From tabName where Str$(obj) = "Collection" into Collections
+				Update Collections Set fill = 0
 
+				Select * From tabName where Str$(obj) = "Line" into Lines
+				Update Lines Set fill = styleattr(objectinfo(obj,2),4)
+				
+				Select * From tabName where Str$(obj) = "Polyline" into Lines
+				Update Lines Set fill = styleattr(objectinfo(obj,2),4)
+
+				Select * From tabName where Str$(obj) = "Region" into Regions
+				Update Regions Set fill = styleattr(objectinfo(obj,3),2) 
+	
+				Select * From tabName where Str$(obj) = "Text" into Texts
+				Update Texts Set fill = styleattr(objectinfo(obj,2),4),  Angle = ObjectGeography(obj, 7) 'FontSize = styleattr(objectinfo(obj,2),3)
+				
+				
+				Drop Table Points
+				Drop Table Lines
+				Drop Table Collections
+				Drop Table Regions
+				Drop Table Texts
+
+
+				Update tabName Set R = fill\65536 
+				Update tabName Set G = (fill - (fill \ 65536)*65536)\256 
+				Update tabName Set B = (fill - ((fill \ 65536)*65536)  - (((fill - (fill \ 65536)*65536)\256))*256) 
+		
+				Commit table tabName
+				Pack table tabName  Graphic Data
+			End if
+		End If	
+	Next 
+Browse * From tabName
 End Sub
 
-https://gis.stackexchange.com/questions/207944/mapbasic-cycle-through-directory-of-tab-files?noredirect=1&lq=1
+
+
+
+
