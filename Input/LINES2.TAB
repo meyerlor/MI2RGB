@@ -1,0 +1,14 @@
+!table
+!version 450
+!charset WindowsLatin1
+
+Definition Table
+  Type NATIVE Charset "WindowsLatin1"
+  Fields 2
+    Nummer Char (10) ;
+    Fläche Char (10) ;
+begin_metadata
+"\IsReadOnly" = "FALSE"
+"\MapInfo" = ""
+"\MapInfo\TableID" = "ef6ace53-9a5c-4e54-9271-db0eba9e205e"
+end_metadata

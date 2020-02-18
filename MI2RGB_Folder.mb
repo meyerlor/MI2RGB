@@ -58,10 +58,13 @@ For i = 1 to UBound(myArray)
         tabPath = myArray(i)    '// get path from array
         Open table tabPath      '// open table
         tabName = TableInfo(0, TAB_INFO_NAME)
-
+		
+		
+	
 		If TableInfo(tabName,5)  Then
-			Alter Table tabName ( add fill Integer, R Integer, G Integer,B Integer, line_type Integer, line_width Integer) Interactive
 			
+			Alter Table tabName ( add fill Integer, R Integer, G Integer,B Integer, line_type Integer, line_width_orig Integer, line_width_qgis Integer) Interactive
+						
 			OnError Goto Weitermachen2
 			Alter Table tabName (add Angle float)
 			
@@ -76,13 +79,49 @@ For i = 1 to UBound(myArray)
 				Select * From tabName where Str$(obj) = "Line" into Lines
 				Update Lines Set fill = styleattr(objectinfo(obj,2),4)
 				Update Lines Set line_type = styleattr(objectinfo(obj,2),2)
-				Update Lines Set line_width= styleattr(objectinfo(obj,2),1)
+				Update Lines Set line_width_orig = styleattr(objectinfo(obj,2),1)
+				Update Lines Set line_width_qgis = styleattr(objectinfo(obj,2),1)
+				
+				Select * From Lines where line_width_qgis > 8 AND line_width_qgis < 21 into Lines_width
+				Update Lines_width set line_width_qgis = 1
+				Select * From Lines where line_width_qgis = 25 OR line_width_qgis = 30 into Lines_width
+				Update Lines_width set line_width_qgis = 2
+				Select * From Lines where line_width_qgis = 35 into Lines_width
+				Update Lines_width set line_width_qgis = 3
+				Select * From Lines where line_width_qgis = 40 into Lines_width
+				Update Lines_width set line_width_qgis = 4
+				Select * From Lines where line_width_qgis = 50 into Lines_width
+				Update Lines_width set line_width_qgis = 5
+				Select * From Lines where line_width_qgis = 60 into Lines_width
+				Update Lines_width set line_width_qgis = 6
+				Select * From Lines where line_width_qgis = 70 into Lines_width
+				Update Lines_width set line_width_qgis = 7
+				
 				
 				
 				Select * From tabName where Str$(obj) = "Polyline" into Lines
 				Update Lines Set fill = styleattr(objectinfo(obj,2),4)
 				Update Lines Set line_type = styleattr(objectinfo(obj,2),2)
-				Update Lines Set line_width= styleattr(objectinfo(obj,2),1)
+				Update Lines Set line_width_orig = styleattr(objectinfo(obj,2),1)
+				Update Lines Set line_width_qgis = styleattr(objectinfo(obj,2),1)
+				
+				Select * From Lines where line_width_qgis > 8 AND line_width_qgis < 21 into Lines_width
+				Update Lines_width set line_width_qgis = 1
+				Select * From Lines where line_width_qgis = 25 OR line_width_qgis = 30 into Lines_width
+				Update Lines_width set line_width_qgis = 2
+				Select * From Lines where line_width_qgis = 35 into Lines_width
+				Update Lines_width set line_width_qgis = 3
+				Select * From Lines where line_width_qgis = 40 into Lines_width
+				Update Lines_width set line_width_qgis = 4
+				Select * From Lines where line_width_qgis = 50 into Lines_width
+				Update Lines_width set line_width_qgis = 5
+				Select * From Lines where line_width_qgis = 60 into Lines_width
+				Update Lines_width set line_width_qgis = 6
+				Select * From Lines where line_width_qgis = 70 into Lines_width
+				Update Lines_width set line_width_qgis = 7
+				
+				
+				
 				
 				Select * From tabName where Str$(obj) = "Region" into Regions
 				Update Regions Set fill = styleattr(objectinfo(obj,3),2) 
