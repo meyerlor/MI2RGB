@@ -60,7 +60,7 @@ For i = 1 to UBound(myArray)
         tabName = TableInfo(0, TAB_INFO_NAME)
 
 		If TableInfo(tabName,5)  Then
-			Alter Table tabName ( add fill Integer, R Integer, G Integer,B Integer) Interactive
+			Alter Table tabName ( add fill Integer, R Integer, G Integer,B Integer, line_type Integer, line_width Integer) Interactive
 			
 			OnError Goto Weitermachen2
 			Alter Table tabName (add Angle float)
@@ -75,10 +75,15 @@ For i = 1 to UBound(myArray)
 
 				Select * From tabName where Str$(obj) = "Line" into Lines
 				Update Lines Set fill = styleattr(objectinfo(obj,2),4)
+				Update Lines Set line_type = styleattr(objectinfo(obj,2),2)
+				Update Lines Set line_width= styleattr(objectinfo(obj,2),1)
+				
 				
 				Select * From tabName where Str$(obj) = "Polyline" into Lines
 				Update Lines Set fill = styleattr(objectinfo(obj,2),4)
-
+				Update Lines Set line_type = styleattr(objectinfo(obj,2),2)
+				Update Lines Set line_width= styleattr(objectinfo(obj,2),1)
+				
 				Select * From tabName where Str$(obj) = "Region" into Regions
 				Update Regions Set fill = styleattr(objectinfo(obj,3),2) 
 	
